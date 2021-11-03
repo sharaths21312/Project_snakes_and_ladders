@@ -1,0 +1,62 @@
+{
+    "players_comment": "Set the players here (max 4), of the format 'name' (string), 'color' (3-membered array)",
+    "players": [
+        {
+            "name":"Player 1",
+            "color": [255,0,0]
+        },
+        {
+            "name":"Player 2",
+            "color": [0, 255, 0]
+        }
+    ],
+    
+    "snakes_comment": "Add snakes for the board here, format: [start (up), end (down)]",
+    "snakes": [
+        [23, 2],
+        [31, 12],
+        [43, 16],
+        [48, 6],
+        [54, 26],
+        [88, 69],
+        [95, 46],
+        [99, 63]
+    ],
+
+    "ladders_comment": "Add ladders for the board here, format [start (down), end (up)]",
+    "ladders": [
+        [4, 22],
+        [7, 34],
+        [11, 49],
+        [21, 58],
+        [57, 77],
+        [65, 97],
+        [45, 68],
+        [79, 98]
+    ],
+
+    "colors_comment": "Change the color for various things here (R G B)",
+    "colors": {
+        "text": [0, 0, 0],
+        "player_box_ui": [255, 0, 0],
+        "move_button": [0, 255, 0],
+        "reset_button": [255, 0, 0],
+        "grid_numbers": [0, 0, 0],
+        "grid": [0, 0, 0],
+        "background": [160, 160, 160],
+        "players_display_boxes_color": [255, 0, 0],
+        "snakes": [255, 0, 0],
+        "ladders": [0, 255, 0]
+    },
+
+    "buttons_comment": "Change position of move and reset buttons here",
+    "buttons":{
+        "box_move": [650, 650],
+        "box_reset": [650, 200]
+    },
+    "others":{
+        "players_display_boxes_pos": [20, 630],
+        "players_display_boxes_size": [150, 60],
+        "move_text_pos": [400, 700]
+    }
+}
