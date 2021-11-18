@@ -2,7 +2,6 @@
 import json
 from random import randint
 import pygame
-from pygame.mouse import get_pressed as mouse_pressed, get_pos as mouse_pos
 
 import classes
 
@@ -10,14 +9,15 @@ pygame.font.init()
 Font_used: pygame.font = pygame.font.SysFont("arial", 20)
 clock = pygame.time.Clock()
 
-# Remove "game.py" (7 characters) from the current file path to get the folder
-players_file = open(__file__[0:-7] + 'players.json')
+# Get the folder directory
+players_file = open(__file__[:-7] + 'players.json')
 players_text = json.load(players_file)
 players_file.close()
 
 
 pygame.init()
-display = pygame.display.set_mode([800, 800], flags=pygame.SCALED | pygame.RESIZABLE)
+display = pygame.display.set_mode([800, 800],
+                                  flags=pygame.SCALED | pygame.RESIZABLE)
 
 
 def init():
@@ -58,13 +58,14 @@ while True:
         if e.type == pygame.QUIT:
             exit()
 
-        if (mouse_pressed()[0] and button_move.collidepoint(mouse_pos())
+        if (pygame.mouse.get_pressed()[0] 
+                and button_move.collidepoint(pygame.mouse.get_pos())
                 or e.type == pygame.KEYDOWN):
             roll = randint(1, 6)
             players_list.move(roll)
             snakes_ladders.check(players_list)
-            print(roll)
-        elif mouse_pressed()[0] and button_reset.collidepoint(mouse_pos()):
+        elif (pygame.mouse.get_pressed()[0] 
+                and button_reset.collidepoint(pygame.mouse.get_pos())):
             init()
 
     # Redraw screen
@@ -90,7 +91,8 @@ while True:
 
     # Movement text
     if players_list.turn != -1 and not players_list.game_over:
-        display.blit(Font_used.render(f"{players_list.players_list[players_list.turn].name} moves by {roll}", True, button_text_col),
+        text_displayed = f"{players_list.players_list[players_list.turn].name} moves by {roll}"
+        display.blit(Font_used.render(text_displayed, True, button_text_col),
                      (move_text[0], move_text[1]))
     elif players_list.game_over:
         display.blit(Font_used.render("Game over", True, button_text_col),

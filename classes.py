@@ -1,10 +1,6 @@
 from __future__ import annotations
-import math
-import typing
-import pygame
-from pygame import Rect
-from pygame import draw
-
+import math, typing, pygame
+from pygame import Rect, draw
 
 
 class box:
@@ -101,10 +97,11 @@ class players:
         """Draws the text that displays the current score and move"""
         for i, j in enumerate(self.players_list):
             if j.has_won:
-                text = font.render(f"{j.name}: won", True, self.text_col)
+                text = font.render(f"{j.name}: won",
+                                   True, self.text_col)
             else:
-                text = font.render(
-                    f"{j.name}: {j.move_to}", True, self.text_col)
+                text = font.render(f"{j.name}: {j.move_to}",
+                                   True, self.text_col)
             xpos = self.boxes_pos[0] + self.boxes_size[0] * (i % 2)
             ypos = self.boxes_pos[1] + self.boxes_size[1] * (i > 1)
             canvas.blit(text, [xpos + self.boxes_size[0] /
@@ -114,6 +111,7 @@ class players:
         for i in range(self.num_players):
             xpos = self.boxes_pos[0] + self.boxes_size[0] * (i % 2)
             ypos = self.boxes_pos[1] + self.boxes_size[1] * (i > 1)
+
             draw.rect(canvas, self.col, (xpos, ypos,
                       self.boxes_size[0], self.boxes_size[1]),
                       width=(3 and not self.players_list[i].has_won))
@@ -137,8 +135,7 @@ class player:
         self.color: tuple = tuple(color)
 
         # The current display coordinates of the circle
-        self.coordinates: pygame.Vector2 = pygame.Vector2(
-            10, 550)
+        self.coordinates: pygame.Vector2 = pygame.Vector2(10, 550)
         self.has_won: bool = False
 
         # The final position of the player after all moves
@@ -153,7 +150,7 @@ class player:
         self.moves: list[str] = []
         # The endpoint of the animation currently occuring
         self.moving: int = start
-        # Used to pause animation between moves when many are done at once
+        # Used to pause animation between different moves
         self.pauseframes: int = 0
 
     def draw(self, canvas: pygame.Surface) -> None:
@@ -182,7 +179,7 @@ class player:
 
         if self.animate_int[0] == self.animate_int[1] == self.moving:
             # If current move is finished
-            if self.process():
+            if not self.process():
                 return
         if self.pauseframes:
             self.pauseframes -= 1
@@ -192,37 +189,39 @@ class player:
             self.animate_int[1] += sign(self.moving - self.animate_int[1])
 
         self.pos += sign(self.animate_int[1] -
-                         self.animate_int[0]) * self.speed  # Actual movement step
+                         self.animate_int[0]) * self.speed  # Actual movement
 
-        if (math.fabs(self.pos - self.animate_int[1]) <= self.speed + 0.01) and self.pos >= self.animate_int[1]:
+        if (math.fabs(self.pos - self.animate_int[1]) <= self.speed + 0.01
+            and self.pos >= self.animate_int[1]):
             # If current step is finished
             self.animate_int[0] = self.animate_int[1]
             self.pos = self.animate_int[1]
 
             # Coordinates based on current position
         self.coordinates = transform_coordinates(
-            self.pos, self.animate_int, boxes[self.animate_int[0] - 1].pos, boxes[self.animate_int[1] - 1].pos)
+            self.pos, self.animate_int, boxes[self.animate_int[0] - 1].pos,
+            boxes[self.animate_int[1] - 1].pos)
 
         
         # Working of the animate() function:
-        # self.pos defines the current position of the box, and is moved between the two values in the animate_int variable
-        # For normal movement, the animate_int is the interval of 2 continuous boxes (eg: [20, 21])
-        # For movement on a snake/ladder, the animate_int is the start and end of the current move (eg: [20, 43] or [7, 25])
-        # The pos is incremented by speed every call to the function and it represents the coordinate in between the two animate_int values
-        # Eg: animate_int = [10, 11] and pos = 10.5 is halfway between the "10" box and "11" box,
-        # and animate_int = [20, 60] and pos = 40 is halfway between the "20" box and "60" box on a ladder
-        # moving represents the current move that the animation is proceeding in .
+        # self.pos defines the current position of the box, and is moved in the animate_int variable
+        # For normal movement, the animate_int is the interval of 2 continuous boxes
+        # For movement on a snake/ladder, the animate_int is the start and end of the current move
+        # The pos variable represents the coordinate in between the two animate_int values
+        # self.moving represents the current move that the animation is proceeding in .
         # the self.process function sets the variables up for the next move
         # In a move, the animate_int interval changes several times
-        # eg: in moving from 1 to 4, animate_int first takes the value [1, 2], then [2, 3], then [3, 4], then [4, 4] when finished
+        # eg: in moving from 1 to 4, animate_int first takes the value [1, 2],
+        # then [2, 3], then [3, 4], then [4, 4] when finished
 
     def process(self) -> bool:
         """Sets up moves from the moves list to be animated"""
-        if len(self.moves) == 0:
-            return True
+        try:
+            x: list[str] = self.moves.pop(0).split()
+            y: int = int(x[1])
+        except IndexError:
+            return None
 
-        x: list[str] = self.moves.pop(0).split()
-        y: int = int(x[1])
         if x[0] == 'm':
             self.moving = y
             self.speed = 0.25
@@ -232,7 +231,7 @@ class player:
             self.moving = y
             self.animate_int[1] = y
             self.pauseframes = 6
-        return False
+        return True
 
 
 class snakesLadders:
@@ -246,11 +245,17 @@ class snakesLadders:
         self.ladders_color = data['colors']['ladders']
 
         for i in data['snakes']:
-            self.snakes.append(arrow(boxes[i[1] - 1].x + 30, boxes[i[1] - 1].y + 30,
-                               boxes[i[0] - 1].x + 30, boxes[i[0] - 1].y + 30, i[0], i[1]))
+            end = boxes[i[1] - 1]
+            start = boxes[i[0] - 1]
+            self.snakes.append(arrow(end.x + 30, end.y + 30,
+                                     start.x + 30, start.y + 30,
+                                     i[0], i[1]))
         for i in data['ladders']:
-            self.ladders.append(arrow(boxes[i[1] - 1].x + 30, boxes[i[1] - 1].y + 30,
-                                      boxes[i[0] - 1].x + 30, boxes[i[0] - 1].y + 30, i[0], i[1]))
+            end = boxes[i[1] - 1]
+            start = boxes[i[0] - 1]
+            self.ladders.append(arrow(end.x + 30, end.y + 30,
+                                      start.x + 30, start.y + 30, 
+                                      i[0], i[1]))
         # The - 1 is necessary due to the boxes list starting from 0,
         # but the positions read from the file start from 1
 
@@ -262,6 +267,7 @@ class snakesLadders:
                       i.start, i.vector + i.start, 4)
             draw.polygon(canvas, self.snakes_color, [
                          i.side1 + i.start, i.side2 + i.start, i.start])
+        
         for i in self.ladders:
             draw.line(canvas, self.ladders_color,
                       i.start, i.vector + i.start, 4)
@@ -277,17 +283,18 @@ class snakesLadders:
 
 
 class arrow:
-    """A class that computes and stores coordinates 
-    for drawing an arrow, which represents a snake or ladder"""
+    """A class that computes and stores coordinates for drawing an arrow"""
 
-    def __init__(self, startx, starty, endx, endy, start_value, end_value) -> None:
+    def __init__(self, startx, starty, endx, endy,
+                 start_value, end_value) -> None:
         self.vector = pygame.Vector2(endx - startx, endy - starty)
         self.start = pygame.Vector2(startx, starty)
 
         self.side1 = pygame.Vector2()
         self.side2 = pygame.Vector2()
 
-        # Rotate the vectors to form the arrow head (vector.as_polar()[1] is the angle of the vector)
+        # Rotate the vectors to form the arrow head 
+        # vector.as_polar()[1] is the angle of the vector
         self.side1.from_polar((20, self.vector.as_polar()[1] - 30))
         self.side2.from_polar((20, self.vector.as_polar()[1] + 30))
 
@@ -299,7 +306,7 @@ def transform_coordinates(value: float,
                           minmax: tuple[float, float],
                           coords1: pygame.Vector2,
                           coords2: pygame.Vector2) -> pygame.Vector2:
-    # Get a value between 2 coordinates
+    """ Get a position between 2 coordinates """
     try:
         fac = (value - minmax[0])/(minmax[1] - minmax[0])
     except ZeroDivisionError:
@@ -307,7 +314,8 @@ def transform_coordinates(value: float,
     return coords1 * (1 - fac) + coords2 * fac
 
 
-def sign(num: float) -> int:  # Sign of number
+def sign(num: float) -> int:  
+    """ Sign of number """
     if num == 0:
         return 0
     return int(num // math.fabs(num))
