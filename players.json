@@ -1,5 +1,5 @@
 {
-    "players_comment": "Set the players here (max 4), of the format 'name' (string), 'color' (3-membered array)",
+    // Set the players (max 4), of the format 'name' (string), 'color' (3-membered array),
     "players": [
         {
             "name":"Player 1",
@@ -11,7 +11,7 @@
         }
     ],
     
-    "snakes_comment": "Add snakes for the board here, format: [start (up), end (down)]",
+    // Add snakes for the board, format: [start (up), end (down)]
     "snakes": [
         [23, 2],
         [31, 12],
@@ -23,7 +23,7 @@
         [99, 63]
     ],
 
-    "ladders_comment": "Add ladders for the board here, format [start (down), end (up)]",
+    // Add ladders for the board, format [start (down), end (up)]"
     "ladders": [
         [4, 22],
         [7, 34],
@@ -35,7 +35,7 @@
         [79, 98]
     ],
 
-    "colors_comment": "Change the color for various things here (R G B)",
+    // Change the color for various things (R G B)
     "colors": {
         "text": [0, 0, 0],
         "player_box_ui": [255, 0, 0],
@@ -49,14 +49,14 @@
         "ladders": [0, 255, 0]
     },
 
-    "buttons_comment": "Change position of move and reset buttons here",
-    "buttons":{
-        "box_move": [650, 650],
-        "box_reset": [650, 200]
-    },
-    "others":{
-        "players_display_boxes_pos": [20, 630],
-        "players_display_boxes_size": [150, 60],
-        "move_text_pos": [400, 700]
-    }
+    // Change position of buttons and players text
+    "box_move": [650, 650],
+    "box_reset": [650, 200],
+    "move_text_pos": [400, 700],
+    "players_display_boxes_pos": [20, 630],
+    "players_display_boxes_size": [150, 60],
+
+    // currently unused
+    // screen size - 1 = 800x800
+    "screen_scale": 1
 }

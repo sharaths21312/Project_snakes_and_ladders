@@ -68,9 +68,9 @@ class players:
             'players_display_boxes_color']
         self.text_col: list[int, int, int] = players_data['colors']['text']
 
-        self.boxes_pos: list[int, int] = players_data['others'][
+        self.boxes_pos: list[int, int] = players_data[
             'players_display_boxes_pos']
-        self.boxes_size: list[int, int] = players_data['others'][
+        self.boxes_size: list[int, int] = players_data[
             'players_display_boxes_size']
 
     def move(self, move_by: int) -> None:

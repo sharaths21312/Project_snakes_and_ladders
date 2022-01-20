@@ -9,12 +9,6 @@ pygame.font.init()
 Font_used: pygame.font = pygame.font.SysFont("arial", 20)
 clock = pygame.time.Clock()
 
-# Get the folder directory
-players_file = open(__file__[:-7] + 'players.json')
-players_text = json.load(players_file)
-players_file.close()
-
-
 pygame.init()
 display = pygame.display.set_mode([800, 800],
                                   flags=pygame.SCALED | pygame.RESIZABLE)
@@ -24,24 +18,36 @@ def init():
     """Initialise all variables"""
     global roll, players_list, players_text, button_move, button_reset, \
         bg_col, snakes_ladders, grid_object, move_text, button_move_col, \
-        button_text_col, button_reset_col
+        button_text_col, button_reset_col, display
 
+    # Open json file
     players_file = open(__file__[0:-7] + 'players.json')
-    players_text = json.load(players_file)
-    players_file.close()
+    
+    # Workaround to allow comments
+    players_str = ""
+    for i in players_file.readlines():
+        if i.find('//') > -1:
+            players_str += i[:i.find('//')]
+        else:
+            players_str += i
 
-    bg_col = players_text["colors"]["background"]
-    button_move_col = players_text["colors"]["move_button"]
-    button_reset_col = players_text["colors"]["reset_button"]
-    button_text_col = players_text["colors"]["text"]
+    players_file.close()
+    players_text = json.loads(players_str)
+
+    bg_col = players_text['colors']['background']
+    button_move_col = players_text['colors']['move_button']
+    button_reset_col = players_text['colors']['reset_button']
+    button_text_col = players_text['colors']['text']
     roll = 0
 
     players_list = classes.players(players_text)
-    button_move = pygame.Rect(players_text["buttons"]["box_move"], (100, 100))
-    button_reset = pygame.Rect(players_text["buttons"]["box_reset"], (60, 40))
-    grid_object = classes.boxGrid(players_text["colors"]["grid"])
+    button_move = pygame.Rect(players_text['box_move'], (100, 100))
+    button_reset = pygame.Rect(players_text['box_reset'], (60, 40))
+    grid_object = classes.boxGrid(players_text['colors']['grid'])
     snakes_ladders = classes.snakesLadders(players_text, grid_object.boxes)
-    move_text = players_text["others"]["move_text_pos"]
+    move_text = players_text['move_text_pos']
+    display = pygame.display.set_mode([800 * players_text['screen_scale'], 800 * players_text['screen_scale']],
+                                      flags=pygame.SCALED | pygame.RESIZABLE)
 
 
 init()
