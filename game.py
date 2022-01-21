@@ -8,6 +8,7 @@ import classes
 pygame.font.init()
 Font_used: pygame.font = pygame.font.SysFont("arial", 20)
 clock = pygame.time.Clock()
+wait_frames, rate_limit = 0, 0
 
 pygame.init()
 display = pygame.display.set_mode([800, 800],
@@ -18,7 +19,7 @@ def init():
     """Initialise all variables"""
     global roll, players_list, players_text, button_move, button_reset, \
         bg_col, snakes_ladders, grid_object, move_text, button_move_col, \
-        button_text_col, button_reset_col, display
+        button_text_col, button_reset_col, display, rate_limit
 
     # Open json file
     players_file = open(__file__[0:-7] + 'players.json')
@@ -40,6 +41,7 @@ def init():
     button_text_col = players_text['colors']['text']
     roll = 0
 
+    rate_limit = players_text["ratelimit"]
     players_list = classes.players(players_text)
     button_move = pygame.Rect(players_text['box_move'], (100, 100))
     button_reset = pygame.Rect(players_text['box_reset'], (60, 40))
@@ -67,12 +69,18 @@ while True:
         if (pygame.mouse.get_pressed()[0] 
                 and button_move.collidepoint(pygame.mouse.get_pos())
                 or e.type == pygame.KEYDOWN):
+            if wait_frames: break
+            
+            wait_frames += rate_limit
             roll = randint(1, 6)
             players_list.move(roll)
             snakes_ladders.check(players_list)
         elif (pygame.mouse.get_pressed()[0] 
                 and button_reset.collidepoint(pygame.mouse.get_pos())):
             init()
+
+    # Update wait frames
+    if wait_frames > 0: wait_frames -= 1
 
     # Redraw screen
 
