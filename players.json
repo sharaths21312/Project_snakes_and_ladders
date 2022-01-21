@@ -57,8 +57,8 @@
     "players_display_boxes_size": [150, 60],
 
     // Rate limit: number of frames to wait after a move before the next move
-    "ratelimit": 15,
-    // currently unused
+    "ratelimit": 30,
+
     // screen size - 1 = 800x800
     "screen_scale": 1
 }

@@ -4,36 +4,39 @@ from random import randint
 import pygame
 
 import classes
+from classes import mtp
 
 pygame.font.init()
 Font_used: pygame.font = pygame.font.SysFont("arial", 20)
 clock = pygame.time.Clock()
 wait_frames, rate_limit = 0, 0
 
-pygame.init()
-display = pygame.display.set_mode([800, 800],
-                                  flags=pygame.SCALED | pygame.RESIZABLE)
+# Open json file
+players_file = open(__file__[0:-7] + 'players.json')
 
+# Workaround to allow comments
+players_str = ""
+for i in players_file.readlines():
+    if i.find('//') > -1:
+        players_str += i[:i.find('//')]
+    else:
+        players_str += i
+players_file.close()
+players_text = json.loads(players_str)
+
+screen_scale = players_text['screen_scale']
+Font_used: pygame.font = pygame.font.SysFont("arial", int(20 * screen_scale))
+display = pygame.display.set_mode([int(800 * screen_scale), int(800 * screen_scale)],
+                                    flags=pygame.SCALED)
+
+pygame.init()
 
 def init():
     """Initialise all variables"""
     global roll, players_list, players_text, button_move, button_reset, \
         bg_col, snakes_ladders, grid_object, move_text, button_move_col, \
-        button_text_col, button_reset_col, display, rate_limit
+        button_text_col, button_reset_col, display, screen_scale, rate_limit
 
-    # Open json file
-    players_file = open(__file__[0:-7] + 'players.json')
-    
-    # Workaround to allow comments
-    players_str = ""
-    for i in players_file.readlines():
-        if i.find('//') > -1:
-            players_str += i[:i.find('//')]
-        else:
-            players_str += i
-
-    players_file.close()
-    players_text = json.loads(players_str)
 
     bg_col = players_text['colors']['background']
     button_move_col = players_text['colors']['move_button']
@@ -42,14 +45,12 @@ def init():
     roll = 0
 
     rate_limit = players_text["ratelimit"]
-    players_list = classes.players(players_text)
-    button_move = pygame.Rect(players_text['box_move'], (100, 100))
-    button_reset = pygame.Rect(players_text['box_reset'], (60, 40))
-    grid_object = classes.boxGrid(players_text['colors']['grid'])
-    snakes_ladders = classes.snakesLadders(players_text, grid_object.boxes)
+    players_list = classes.players(players_text, screen_scale)
+    button_move = pygame.Rect(mtp(players_text['box_move'], screen_scale), mtp((100, 100), screen_scale))
+    button_reset = pygame.Rect(mtp(players_text['box_reset'], screen_scale), mtp((60, 40), screen_scale))
+    grid_object = classes.boxGrid(players_text['colors']['grid'], screen_scale)
+    snakes_ladders = classes.snakesLadders(players_text, grid_object.boxes, screen_scale)
     move_text = players_text['move_text_pos']
-    display = pygame.display.set_mode([800 * players_text['screen_scale'], 800 * players_text['screen_scale']],
-                                      flags=pygame.SCALED | pygame.RESIZABLE)
 
 
 init()
@@ -96,12 +97,12 @@ while True:
 
     # Move button
     display.blit(Font_used.render("Click here", True, button_text_col),
-                 (button_move.x + 15, button_move.y + 25))
+                 (button_move.x + 15 * screen_scale, button_move.y + 25 * screen_scale))
     display.blit(Font_used.render("to Move", True, button_text_col),
-                 (button_move.x + 20, button_move.y + 50))
+                 (button_move.x + 20 * screen_scale, button_move.y + 50 * screen_scale))
     # Reset button
     display.blit(Font_used.render("Reset", True, button_text_col),
-                 (button_reset.x + 9, button_reset.y + 7))
+                 (button_reset.x + 9 * screen_scale, button_reset.y + 7 * screen_scale))
 
     # Movement text
     if players_list.turn != -1 and not players_list.game_over:

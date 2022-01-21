@@ -1,17 +1,18 @@
 from __future__ import annotations
 import math, typing, pygame
+from turtle import screensize
 from pygame import Rect, draw
 
 
 class box:
     """An individual box"""
 
-    def __init__(self, x: int, y: int, num: int, size: int) -> None:
-        self.x = x
-        self.y = y
+    def __init__(self, x: int, y: int, num: int, size: int, screen_scale: float | int = 1) -> None:
+        self.x = x * screen_scale
+        self.y = y * screen_scale
         self.pos = pygame.Vector2(self.x, self.y)
         self.num = num
-        self.size = size
+        self.size = size * screen_scale
         self.rect = Rect([self.x, self.y, self.size, self.size])
 
     def draw_text(self,
@@ -31,14 +32,14 @@ class box:
 class boxGrid:
     """Stores the grid of boxes"""
 
-    def __init__(self, col: typing.Sequence) -> None:
+    def __init__(self, col: typing.Sequence, screen_scale = 1) -> None:
         self.boxes: list[box] = []
         for i in range(10):
             for j in range(10):
                 self.boxes.append(box(
                     10 + ((i % 2) * 540) - (60 * j) +
                     (120 * (1-(i % 2)) * j), 550 - 60 * i,
-                    j + 10 * i + 1, 60))
+                    j + 10 * i + 1, 60, screen_scale))
         self.color = col
 
     def draw_text(self,
@@ -55,10 +56,10 @@ class boxGrid:
 class players:
     """Stores the combination of player objects and the scoreboard"""
 
-    def __init__(self, players_data: dict) -> None:
+    def __init__(self, players_data: dict, screen_scale: int | float = 1) -> None:
         self.players_list: list[player] = []
         for i in players_data['players']:
-            self.players_list.append(player(i['name'], i['color']))
+            self.players_list.append(player(i['name'], i['color'], screen_scale))
 
         self.turn: int = -1  # 1 will be added on the first call to move()
         self.num_players: int = len(self.players_list)
@@ -68,10 +69,10 @@ class players:
             'players_display_boxes_color']
         self.text_col: list[int, int, int] = players_data['colors']['text']
 
-        self.boxes_pos: list[int, int] = players_data[
-            'players_display_boxes_pos']
-        self.boxes_size: list[int, int] = players_data[
-            'players_display_boxes_size']
+        self.boxes_pos: list[int, int] = mtp(players_data[
+            'players_display_boxes_pos'], screen_scale)
+        self.boxes_size: list[int, int] = mtp(players_data[
+            'players_display_boxes_size'], screen_scale)
 
     def move(self, move_by: int) -> None:
         """Processes the current turn of movement"""
@@ -126,16 +127,17 @@ class players:
 class player:
     """Stores an individual player object"""
 
-    def __init__(self, name: str, color: typing.Sequence) -> None:
+    def __init__(self, name: str, color: typing.Sequence, screen_scale) -> None:
 
         # Stores starting position, is for debugging/testing
         start = 1
 
+        self.size = 20 * screen_scale
         self.name: str = name
         self.color: tuple = tuple(color)
 
         # The current display coordinates of the circle
-        self.coordinates: pygame.Vector2 = pygame.Vector2(10, 550)
+        self.coordinates: pygame.Vector2 = pygame.Vector2(*mtp((10, 550), screen_scale))
         self.has_won: bool = False
 
         # The final position of the player after all moves
@@ -156,7 +158,7 @@ class player:
     def draw(self, canvas: pygame.Surface) -> None:
         """Draw the player"""
         draw.circle(canvas, self.color,
-                    self.coordinates.elementwise() + 30, 20)
+                    self.coordinates.elementwise() + 1.5 * self.size, self.size)
 
     def move(self, move_by: int = 0) -> None:
         """Controls the movement in normal die rolls"""
@@ -237,25 +239,26 @@ class player:
 class snakesLadders:
     """Stores data for snakes, ladders and checking player positions"""
 
-    def __init__(self, data: dict, boxes: list[box]) -> None:
+    def __init__(self, data: dict, boxes: list[box], screen_scale: float | int = 1) -> None:
         self.snakes: list[arrow] = []
         self.ladders: list[arrow] = []
 
         self.snakes_color = data['colors']['snakes']
         self.ladders_color = data['colors']['ladders']
+        box_size = 30 * screen_scale
 
         for i in data['snakes']:
             end = boxes[i[1] - 1]
             start = boxes[i[0] - 1]
-            self.snakes.append(arrow(end.x + 30, end.y + 30,
-                                     start.x + 30, start.y + 30,
+            self.snakes.append(arrow((end.x + box_size, end.y + box_size,
+                                     start.x + box_size, start.y + box_size),
                                      i[0], i[1]))
         for i in data['ladders']:
             end = boxes[i[1] - 1]
             start = boxes[i[0] - 1]
-            self.ladders.append(arrow(end.x + 30, end.y + 30,
-                                      start.x + 30, start.y + 30, 
-                                      i[0], i[1]))
+            self.ladders.append(arrow((end.x + box_size, end.y + box_size,
+                                     start.x + box_size, start.y + box_size),
+                                     i[0], i[1]))
         # The - 1 is necessary due to the boxes list starting from 0,
         # but the positions read from the file start from 1
 
@@ -285,10 +288,11 @@ class snakesLadders:
 class arrow:
     """A class that computes and stores coordinates for drawing an arrow"""
 
-    def __init__(self, startx, starty, endx, endy,
+    def __init__(self, t,
                  start_value, end_value) -> None:
-        self.vector = pygame.Vector2(endx - startx, endy - starty)
-        self.start = pygame.Vector2(startx, starty)
+        # t : start_x, start_y, end_x, end_y 
+        self.vector = pygame.Vector2(t[2] - t[0], t[3] - t[1])
+        self.start = pygame.Vector2(t[0], t[1])
 
         self.side1 = pygame.Vector2()
         self.side2 = pygame.Vector2()
@@ -319,3 +323,9 @@ def sign(num: float) -> int:
     if num == 0:
         return 0
     return int(num // math.fabs(num))
+
+def mtp(t, n: int | float = 1):
+    tmp = []
+    for i in t:
+        tmp.append(i*n)
+    return tmp
