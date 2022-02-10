@@ -164,17 +164,19 @@ class player:
         """Controls the movement in normal die rolls"""
 
         self.move_to += move_by
+        if self.move_to == 100 or self.move_to - move_by == 100:
+            self.has_won = True
         if self.move_to > 100:
             self.move_to -= move_by
             return
-        if self.move_to == 100:
-            self.has_won = True
         self.moves.append(f'm {self.move_to}')
 
     def SN_move(self, to: int) -> None:
         """Controls movement when on a snake/ladder"""
         self.moves.append(f's {to}')
         self.move_to = to
+        if self.move_to == 100:
+            self.has_won = True
 
     def animate(self, boxes: list[box]) -> None:
         """Proceed with the animation for 1 frame"""
@@ -279,10 +281,11 @@ class snakesLadders:
 
     def check(self, to_check: players) -> None:
         """Check if a player is on a snake or ladder and act accordingly"""
-        for i in self.snakes + self.ladders:
-            for j in to_check.players_list:
-                if i.start_value == j.move_to:
-                    j.SN_move(i.end_value)
+        for i in to_check.players_list:
+            if i.has_won: return
+            for j in self.snakes + self.ladders:
+                if j.start_value == i.move_to:
+                    i.SN_move(j.end_value)
 
 
 class arrow:
