@@ -6,6 +6,7 @@ import pygame
 import classes
 from classes import mtp
 
+pygame.init()
 pygame.font.init()
 Font_used: pygame.font = pygame.font.SysFont("arial", 20)
 clock = pygame.time.Clock()
@@ -29,7 +30,6 @@ Font_used: pygame.font = pygame.font.SysFont("arial", int(20 * screen_scale))
 display = pygame.display.set_mode([int(800 * screen_scale), int(800 * screen_scale)],
                                     flags=pygame.SCALED)
 
-pygame.init()
 
 def init():
     """Initialise all variables"""
@@ -108,10 +108,10 @@ while True:
     if players_list.turn != -1 and not players_list.game_over:
         text_displayed = f"{players_list.players_list[players_list.turn].name} moves by {roll}"
         display.blit(Font_used.render(text_displayed, True, button_text_col),
-                     (move_text[0], move_text[1]))
+                     (move_text[0] * screen_scale, move_text[1] * screen_scale))
     elif players_list.game_over:
         display.blit(Font_used.render("Game over", True, button_text_col),
-                     (move_text[0], move_text[1]))
+                     (move_text[0] * screen_scale, move_text[1] * screen_scale))
 
     # Remaining text
     players_list.draw_text(display, Font_used)
